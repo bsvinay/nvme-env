@@ -15,6 +15,7 @@ RUN apt-get update \
         libsasl2-dev libsdl1.2-dev libseccomp-dev libsnappy-dev libssh2-1-dev \
         libvde-dev libvdeplug-dev libvte-dev libxen-dev liblzo2-dev \
         valgrind xfslibs-dev \
+        libssl-dev \
         libnfs-dev libiscsi-dev
 
 RUN apt-get install -y bc
@@ -57,6 +58,11 @@ RUN cp -a $AUFS_SRC/include/uapi/linux/aufs_type.h include/uapi/linux/
 COPY configs/.config .
 RUN make -j`nproc`
 
+# Building the kernel modules for Soft RXE (rdma-rxe.ko)
+# you will need to copy out the /lib/modules/4.11.0-rc4+ out of this docker image to your qemu-nvme spdk docker
+# I used docker cp to copy this folder into local host, and scp to spdk docker.
+RUN make -j`nproc` modules_install
+
 ## Build the perf program
 RUN apt-get install -y \
         flex \
@@ -68,7 +74,6 @@ RUN apt-get install -y \
         libdw-dev \
         libunwind-dev \
         systemtap-sdt-dev \
-        libssl-dev \
         liblzma-dev \
         libiberty-dev \
         binutils-dev
